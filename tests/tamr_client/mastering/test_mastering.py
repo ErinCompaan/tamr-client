@@ -112,3 +112,15 @@ def test_publish_clusters_async():
         "endTime": "",
         "message": "Job has not yet been submitted to Spark",
     }
+
+
+@fake.json
+def test_update_llm_async():
+    s = fake.session()
+    project = fake.mastering_project()
+
+    op = tc.mastering._update_llm_async(s, project)
+    print(op.__dict__)
+    assert op.type == ""
+    assert op.description == "Update LLM data"
+    assert op.status == None

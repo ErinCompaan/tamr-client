@@ -1,0 +1,12 @@
+[
+  {
+    "request": {
+      "method": "POST",
+      "path": "projects/Project%201:updateLLM?updateClusters=true&useManualClustering=false"
+    },
+    "response": {
+      "status": 200,
+      "json": 12345
+    }
+  }
+]

@@ -116,28 +116,54 @@ def _from_response(instance: Instance, response: requests.Response) -> Operation
         response: HTTP Response from the request that started the operation.
     """
     if response.status_code == 204:
-        # Operation was successful, but the response contains no content.
-        # Create a dummy operation to represent this.
-        _never = "0000-00-00T00:00:00.000Z"
-        _description = """Tamr returned HTTP 204 for this operation, indicating that all
-            results that would be produced by the operation are already up-to-date."""
-        resource_json = {
-            "id": "-1",
-            "type": "NOOP",
-            "description": _description,
-            "status": {
-                "state": "SUCCEEDED",
-                "startTime": _never,
-                "endTime": _never,
-                "message": "",
-            },
-            "created": {"username": "", "time": _never, "version": "-1"},
-            "lastModified": {"username": "", "time": _never, "version": "-1"},
-            "relativeId": "operations/-1",
-        }
+        resource_json = _dummy_no_op_response()
     else:
         resource_json = response.json()
     _id = resource_json["id"]
+    _url = URL(instance=instance, path=f"operations/{_id}")
+    return _from_json(_url, resource_json)
+
+
+def _dummy_no_op_response(code="HTTP 204") -> JsonDict:
+    """
+    Operation was successful, but the response contains no content.
+    Create a dummy response to represent this.
+
+    Args:
+        code: response code include in description, default 'HTTP 204'
+    """
+    _never = "0000-00-00T00:00:00.000Z"
+    _description = f"""Tamr returned {code} for this operation, indicating that all
+        results that would be produced by the operation are already up-to-date."""
+    return {
+        "id": "-1",
+        "type": "NOOP",
+        "description": _description,
+        "status": {
+            "state": "SUCCEEDED",
+            "startTime": _never,
+            "endTime": _never,
+            "message": "",
+        },
+        "created": {"username": "", "time": _never, "version": "-1"},
+        "lastModified": {"username": "", "time": _never, "version": "-1"},
+        "relativeId": "operations/-1",
+    }
+
+
+def _from_llm_response(instance: Instance, response: requests.Response) -> Operation:
+    """
+    Handle special case of constructing Operation from Tamr LLM update responses.
+
+    Args:
+        response: HTTP Response from the request that started the operation.
+    """
+    _id = response.json()
+    print(_id, type(_id))
+    if _id == -1:
+        resource_json = _dummy_no_op_response(code="-1")
+    else:
+        resource_json = {"id": _id, "type": "", "description": "Update LLM data"}
     _url = URL(instance=instance, path=f"operations/{_id}")
     return _from_json(_url, resource_json)
 

@@ -10,6 +10,7 @@ from tamr_client.mastering._mastering import (
     _publish_clusters_async,
     _update_cluster_results_async,
     _update_high_impact_pairs_async,
+    _update_llm_async,
     _update_pair_results_async,
     apply_feedback,
     estimate_pairs,
@@ -17,6 +18,7 @@ from tamr_client.mastering._mastering import (
     publish_clusters,
     update_cluster_results,
     update_high_impact_pairs,
+    update_llm,
     update_pair_results,
     update_unified_dataset,
 )

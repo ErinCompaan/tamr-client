@@ -7,8 +7,11 @@ The terminology used here is consistent with Tamr UI terminology
 Asynchronous versions of each function can be found with the suffix `_async` and may be of
 interest to power users
 """
+
 from tamr_client import operation
 from tamr_client._types import MasteringProject, Operation, Session
+from tamr_client._types.instance import Instance
+from tamr_client._types.url import URL
 from tamr_client.dataset import unified
 
 
@@ -98,6 +101,26 @@ def publish_clusters(session: Session, project: MasteringProject) -> Operation:
     return operation.wait(session, op)
 
 
+def update_llm(
+    session: Session,
+    project: MasteringProject,
+    updateClusters: bool = True,
+    useManualClustering: bool = False,
+) -> Operation:
+    """Publish current record clusters and wait for the operation to complete
+
+    Args:
+        project: Tamr Mastering project
+    """
+    op = _update_llm_async(
+        session,
+        project,
+        updateClusters=updateClusters,
+        useManualClustering=useManualClustering,
+    )
+    return operation.wait(session, op)
+
+
 def _estimate_pairs_async(session: Session, project: MasteringProject) -> Operation:
     r = session.post(str(project.url) + "/estimatedPairCounts:refresh")
     return operation._from_response(project.url.instance, r)
@@ -137,3 +160,28 @@ def _update_cluster_results_async(
 def _publish_clusters_async(session: Session, project: MasteringProject) -> Operation:
     r = session.post(str(project.url) + "/publishedClustersWithData:refresh")
     return operation._from_response(project.url.instance, r)
+
+
+def _update_llm_async(
+    session: Session,
+    project: MasteringProject,
+    updateClusters: bool = True,
+    useManualClustering: bool = False,
+) -> Operation:
+    # Generate URL based on project name instead of project's numeric identifier
+    url = str(
+        URL(
+            instance=project.url.instance,
+            base_path=project.url.base_path,
+            path="projects/" + project.name + ":updateLLM",
+        )
+    )
+
+    r = session.post(
+        url,
+        params={
+            updateClusters: updateClusters,
+            useManualClustering: useManualClustering,
+        },
+    )
+    return operation._from_llm_response(project.url.instance, r)
